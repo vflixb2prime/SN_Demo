@@ -10,7 +10,13 @@ interface StatCardProps {
   tone?: "primary" | "success" | "warning" | "muted" | "destructive";
 }
 
-export function StatCard({ label, value, icon, className, tone = "primary" }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  icon,
+  className,
+  tone = "primary",
+}: StatCardProps) {
   const toneClasses: Record<string, string> = {
     primary:
       "bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 text-foreground",
@@ -27,11 +33,15 @@ export function StatCard({ label, value, icon, className, tone = "primary" }: St
   return (
     <Card className={cn("overflow-hidden", toneClasses[tone], className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {label}
+        </CardTitle>
         {icon && <div className="text-muted-foreground/70">{icon}</div>}
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold tracking-tight tabular-nums">{value}</div>
+        <div className="text-3xl font-bold tracking-tight tabular-nums">
+          {value}
+        </div>
       </CardContent>
     </Card>
   );

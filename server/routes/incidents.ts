@@ -1,5 +1,10 @@
 import { RequestHandler } from "express";
-import { Incident, IncidentStatus, IncidentSummary, IncidentSummaryResponse } from "@shared/api";
+import {
+  Incident,
+  IncidentStatus,
+  IncidentSummary,
+  IncidentSummaryResponse,
+} from "@shared/api";
 
 // Deterministic pseudo-random generator
 function mulberry32(seed: number) {
@@ -32,12 +37,19 @@ function generateMockIncidents(daysBack = 120, seed = 123456): Incident[] {
 
     for (let j = 0; j < dailyCount; j++) {
       const createdAt = new Date(day);
-      createdAt.setHours(Math.floor(rand() * 24), Math.floor(rand() * 60), 0, 0);
+      createdAt.setHours(
+        Math.floor(rand() * 24),
+        Math.floor(rand() * 60),
+        0,
+        0,
+      );
 
       const statusRoll = rand();
       let status: IncidentStatus = "open";
-      if (statusRoll < 0.6) status = "open"; // 60% open
-      else if (statusRoll < 0.85) status = "resolved"; // 25% same-day resolved
+      if (statusRoll < 0.6)
+        status = "open"; // 60% open
+      else if (statusRoll < 0.85)
+        status = "resolved"; // 25% same-day resolved
       else status = "on_hold"; // 15%
 
       let resolvedAt: string | null = null;
@@ -96,7 +108,10 @@ function startOfMonth(d: Date) {
   return x;
 }
 
-function computeSummary(incidents: Incident[], now = new Date()): IncidentSummary {
+function computeSummary(
+  incidents: Incident[],
+  now = new Date(),
+): IncidentSummary {
   const todayStart = startOfDay(now);
   const yesterdayStart = new Date(todayStart);
   yesterdayStart.setDate(yesterdayStart.getDate() - 1);
