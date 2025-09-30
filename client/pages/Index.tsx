@@ -6,7 +6,7 @@ import { fetchIncidentSummary } from "@/utils/api/incidents";
 import { IncidentSummaryResponse } from "@shared/api";
 import {
   CalendarDays,
-  ChartNoAxesGantt,
+  BarChart3,
   CheckCircle2,
   Gauge,
   PauseCircle,
