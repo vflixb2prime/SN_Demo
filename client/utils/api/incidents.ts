@@ -14,7 +14,11 @@ export class MissingServiceNowConfigError extends Error {
   }
 }
 
-export async function fetchIncidentSummary(): Promise<IncidentSummaryResponseType> {
+export async function fetchIncidentSummary({
+  query,
+}: {
+  query?: string;
+} = {}): Promise<IncidentSummaryResponseType> {
   if (typeof window === "undefined") {
     throw new Error("ServiceNow summary can only be fetched in the browser.");
   }
@@ -25,7 +29,7 @@ export async function fetchIncidentSummary(): Promise<IncidentSummaryResponseTyp
     throw new MissingServiceNowConfigError();
   }
 
-  const url = buildServiceNowUrl(config);
+  const url = buildServiceNowUrl(config, query);
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${config.token.trim()}`,
