@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Activity } from "lucide-react";
 
 interface MainLayoutProps {
@@ -23,9 +22,7 @@ export default function MainLayout({ children, className }: MainLayoutProps) {
               <div className="text-xs text-muted-foreground">Realtime status overview</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="hidden" />
-          </div>
+          <div className="flex items-center gap-2" />
         </div>
       </header>
       <main className="container py-8">{children}</main>
