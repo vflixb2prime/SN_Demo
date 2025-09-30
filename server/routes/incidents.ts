@@ -126,6 +126,7 @@ function computeSummary(
   let currentMonthResolved = 0;
   let notAssigned = 0;
   let onHoldTotal = 0;
+  const resolvedByCounts: Record<string, number> = {};
 
   for (const inc of incidents) {
     const created = new Date(inc.createdAt);
@@ -153,7 +154,16 @@ function computeSummary(
 
     if (!inc.assignedTo) notAssigned++;
     if (inc.status === "on_hold") onHoldTotal++;
+
+    if (resolved) {
+      const assigneeName = inc.assignedTo ?? "Unassigned";
+      resolvedByCounts[assigneeName] = (resolvedByCounts[assigneeName] ?? 0) + 1;
+    }
   }
+
+  const resolvedBy = Object.entries(resolvedByCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
   return {
     todayTotal,
@@ -165,6 +175,7 @@ function computeSummary(
     currentMonthResolved,
     notAssigned,
     onHoldTotal,
+    resolvedBy,
   };
 }
 
