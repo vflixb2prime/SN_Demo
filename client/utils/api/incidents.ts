@@ -1,5 +1,7 @@
 import { IncidentSummaryResponse } from "@shared/api";
 
+import { IncidentSummaryResponse } from "@shared/api";
+
 export async function fetchIncidentSummary(): Promise<IncidentSummaryResponse> {
   const res = await fetch("/api/incidents/summary");
   if (!res.ok)
