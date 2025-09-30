@@ -213,6 +213,14 @@ export default function ServiceNowSettings() {
       return;
     }
 
+    if (!token.trim()) {
+      toast({
+        title: "Missing token",
+        description: "Add your bearer token before attempting a request.",
+      });
+      return;
+    }
+
     setFetchState({ loading: true, error: null, response: null });
 
     try {
