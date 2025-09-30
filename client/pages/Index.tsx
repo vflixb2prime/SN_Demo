@@ -8,7 +8,6 @@ import {
   MissingServiceNowConfigError,
 } from "@/utils/api/incidents";
 import {
-  SERVICE_NOW_STORAGE_KEY,
   getStoredServiceNowConfig,
   type ServiceNowConfig,
 } from "@/utils/servicenow";
@@ -109,12 +108,6 @@ export default function Index() {
           <Gauge className="mr-2 h-4 w-4" /> Refresh
         </button>
       </div>
-
-      {isError && (
-        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm">
-          Failed to load incident summary.
-        </div>
-      )}
 
       {!config ? (
         <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
