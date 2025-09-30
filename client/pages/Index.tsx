@@ -49,17 +49,16 @@ export default function Index() {
     const refreshConfig = () => {
       setConfig(getStoredServiceNowConfig());
     };
+    const handleStorage = () => refreshConfig();
+    const handleCustom = () => refreshConfig();
 
     refreshConfig();
 
-    window.addEventListener("storage", refreshConfig);
-    window.addEventListener("servicenow-config-updated", refreshConfig as EventListener);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("servicenow-config-updated", handleCustom);
     return () => {
-      window.removeEventListener("storage", refreshConfig);
-      window.removeEventListener(
-        "servicenow-config-updated",
-        refreshConfig as EventListener,
-      );
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("servicenow-config-updated", handleCustom);
     };
   }, []);
 
