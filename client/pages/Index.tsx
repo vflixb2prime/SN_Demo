@@ -1,8 +1,16 @@
 import MainLayout from "@/components/layout/MainLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { fetchIncidentSummary } from "@/utils/api/incidents";
+import {
+  fetchIncidentSummary,
+  MissingServiceNowConfigError,
+} from "@/utils/api/incidents";
+import {
+  getStoredServiceNowConfig,
+  type ServiceNowConfig,
+} from "@/utils/servicenow";
 import { IncidentSummaryResponse } from "@shared/api";
 import {
   CalendarDays,
@@ -13,13 +21,59 @@ import {
   PlusCircle,
   UserX,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+
+function formatAssigneeName(name: string) {
+  if (name === "Unassigned") return name;
+  return name
+    .split(/[\s_-]+/u)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 export default function Index() {
-  const { data, isLoading, isError, refetch, isFetching } =
+  const [config, setConfig] = useState<ServiceNowConfig | null>(() =>
+    getStoredServiceNowConfig(),
+  );
+  const [searchParams] = useSearchParams();
+  const overrideQuery = useMemo(
+    () => searchParams.get("query") ?? undefined,
+    [searchParams],
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const refreshConfig = () => {
+      setConfig(getStoredServiceNowConfig());
+    };
+    const handleStorage = () => refreshConfig();
+    const handleCustom = () => refreshConfig();
+
+    refreshConfig();
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("servicenow-config-updated", handleCustom);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("servicenow-config-updated", handleCustom);
+    };
+  }, []);
+
+  const { data, isLoading, isError, refetch, isFetching, error } =
     useQuery<IncidentSummaryResponse>({
-      queryKey: ["incident-summary"],
-      queryFn: fetchIncidentSummary,
+      queryKey: [
+        "incident-summary",
+        config?.baseUrl,
+        config?.defaultQuery,
+        overrideQuery,
+      ],
+      queryFn: () => fetchIncidentSummary({ query: overrideQuery }),
+      enabled: Boolean(config),
       refetchInterval: 60_000,
+      retry: false,
     });
 
   const summary = data?.summary;
@@ -48,17 +102,30 @@ export default function Index() {
         </button>
       </div>
 
-      {isError && (
-        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm">
-          Failed to load incident summary.
+      {!config ? (
+        <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+          <p className="mb-3 font-medium text-foreground">
+            Connect your ServiceNow API first
+          </p>
+          <p className="mb-4">
+            Save your API endpoint and bearer token on the API Console page to
+            populate the dashboard.
+          </p>
+          <Button asChild>
+            <Link to="/puseapi">Go to API Console</Link>
+          </Button>
         </div>
-      )}
-
-      {isLoading ? (
+      ) : isLoading ? (
         <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 9 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full" />
+            <Skeleton key={i} className="h-24 w-full" />
           ))}
+        </div>
+      ) : isError ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm">
+          {error instanceof MissingServiceNowConfigError
+            ? "ServiceNow configuration not found. Save your API details on the API Console page."
+            : (error?.message ?? "Failed to fetch ServiceNow data.")}
         </div>
       ) : summary ? (
         <div className="space-y-10">
@@ -161,8 +228,33 @@ export default function Index() {
               />
             </div>
           </section>
+
+          {summary.resolvedBy.length > 0 && (
+            <section>
+              <div className="mb-3 flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Resolved by
+                </h2>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                {summary.resolvedBy.map(({ name, count }) => (
+                  <StatCard
+                    key={name}
+                    label={formatAssigneeName(name)}
+                    value={count}
+                    tone="success"
+                  />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
-      ) : null}
+      ) : (
+        <div className="rounded-md border border-muted-foreground/10 bg-muted/30 p-4 text-sm text-muted-foreground">
+          No data available. Verify your query on the API Console page.
+        </div>
+      )}
     </MainLayout>
   );
 }

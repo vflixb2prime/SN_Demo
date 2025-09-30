@@ -1,10 +1,6 @@
 import { RequestHandler } from "express";
-import {
-  Incident,
-  IncidentStatus,
-  IncidentSummary,
-  IncidentSummaryResponse,
-} from "@shared/api";
+import { computeIncidentSummary } from "@shared/summary";
+import { Incident, IncidentStatus, IncidentSummaryResponse } from "@shared/api";
 
 // Deterministic pseudo-random generator
 function mulberry32(seed: number) {
@@ -87,91 +83,10 @@ function generateMockIncidents(daysBack = 120, seed = 123456): Incident[] {
   return incidents;
 }
 
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function startOfDay(d: Date) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-
-function startOfMonth(d: Date) {
-  const x = new Date(d);
-  x.setDate(1);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-
-function computeSummary(
-  incidents: Incident[],
-  now = new Date(),
-): IncidentSummary {
-  const todayStart = startOfDay(now);
-  const yesterdayStart = new Date(todayStart);
-  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-  const monthStart = startOfMonth(now);
-
-  let todayTotal = 0;
-  let todayRaised = 0;
-  let todayResolved = 0;
-  let yesterdayRaised = 0;
-  let yesterdayResolved = 0;
-  let currentMonthTotal = 0;
-  let currentMonthResolved = 0;
-  let notAssigned = 0;
-  let onHoldTotal = 0;
-
-  for (const inc of incidents) {
-    const created = new Date(inc.createdAt);
-    const resolved = inc.resolvedAt ? new Date(inc.resolvedAt) : null;
-
-    if (created >= todayStart) {
-      todayTotal++;
-      todayRaised++;
-    }
-    if (resolved && isSameDay(resolved, now)) todayResolved++;
-
-    if (created >= yesterdayStart && created < todayStart) {
-      yesterdayRaised++;
-    }
-    if (resolved && resolved >= yesterdayStart && resolved < todayStart) {
-      yesterdayResolved++;
-    }
-
-    if (created >= monthStart) {
-      currentMonthTotal++;
-    }
-    if (resolved && resolved >= monthStart) {
-      currentMonthResolved++;
-    }
-
-    if (!inc.assignedTo) notAssigned++;
-    if (inc.status === "on_hold") onHoldTotal++;
-  }
-
-  return {
-    todayTotal,
-    todayRaised,
-    todayResolved,
-    yesterdayRaised,
-    yesterdayResolved,
-    currentMonthTotal,
-    currentMonthResolved,
-    notAssigned,
-    onHoldTotal,
-  };
-}
-
 const INCIDENT_CACHE = generateMockIncidents();
 
 export const handleIncidentSummary: RequestHandler = (_req, res) => {
-  const summary = computeSummary(INCIDENT_CACHE);
+  const summary = computeIncidentSummary(INCIDENT_CACHE);
   const payload: IncidentSummaryResponse = {
     summary,
     generatedAt: new Date().toISOString(),
