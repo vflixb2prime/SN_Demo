@@ -155,6 +155,7 @@ export default function ServiceNowSettings() {
   });
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (!stored) return;
     try {
@@ -197,7 +198,9 @@ export default function ServiceNowSettings() {
       token: trimmedToken,
     };
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
     toast({
       title: "Settings saved",
       description: "Your ServiceNow credentials are stored in this browser.",
