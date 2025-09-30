@@ -32,6 +32,10 @@ export interface IncidentSummary {
   currentMonthResolved: number;
   notAssigned: number;
   onHoldTotal: number;
+  resolvedBy: Array<{
+    name: string;
+    count: number;
+  }>;
 }
 
 export interface IncidentSummaryResponse {
