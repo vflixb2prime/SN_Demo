@@ -1,62 +1,107 @@
-import { DemoResponse } from "@shared/api";
-import { useEffect, useState } from "react";
+import MainLayout from "@/components/layout/MainLayout";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { fetchIncidentSummary } from "@/utils/api/incidents";
+import { IncidentSummaryResponse } from "@shared/api";
+import {
+  CalendarDays,
+  ChartNoAxesGantt,
+  CheckCircle2,
+  Gauge,
+  PauseCircle,
+  PlusCircle,
+  UserX,
+} from "lucide-react";
 
 export default function Index() {
-  const [exampleFromServer, setExampleFromServer] = useState("");
-  // Fetch users on component mount
-  useEffect(() => {
-    fetchDemo();
-  }, []);
+  const { data, isLoading, isError, refetch, isFetching } = useQuery<IncidentSummaryResponse>({
+    queryKey: ["incident-summary"],
+    queryFn: fetchIncidentSummary,
+    refetchInterval: 60_000,
+  });
 
-  // Example of how to fetch data from the server (if needed)
-  const fetchDemo = async () => {
-    try {
-      const response = await fetch("/api/demo");
-      const data = (await response.json()) as DemoResponse;
-      setExampleFromServer(data.message);
-    } catch (error) {
-      console.error("Error fetching hello:", error);
-    }
-  };
+  const summary = data?.summary;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="text-center">
-        {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
-          <svg
-            className="animate-spin h-8 w-8 text-slate-400"
-            viewBox="0 0 50 50"
-          >
-            <circle
-              className="opacity-30"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-            />
-            <circle
-              className="text-slate-600"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="100"
-              strokeDashoffset="75"
-            />
-          </svg>
-          Generating your app...
-        </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
-        </p>
-        <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
+    <MainLayout>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">ServiceNow Incident Status</h1>
+          <p className="text-sm text-muted-foreground">Live overview of incidents — updated {isFetching ? "now" : data ? new Date(data.generatedAt).toLocaleString() : ""}</p>
+        </div>
+        <button
+          className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={() => refetch()}
+        >
+          <Gauge className="mr-2 h-4 w-4" /> Refresh
+        </button>
       </div>
-    </div>
+
+      {isError && (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm">
+          Failed to load incident summary.
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="grid gap-4 md:grid-cols-3">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full" />
+          ))}
+        </div>
+      ) : summary ? (
+        <div className="space-y-10">
+          {/* Today Section */}
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold tracking-tight">Today</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <StatCard label="Total Incident Count" value={summary.todayTotal} icon={<ChartNoAxesGantt className="h-4 w-4" />} tone="primary" />
+              <StatCard label="Today Raised Incident" value={summary.todayRaised} icon={<PlusCircle className="h-4 w-4" />} tone="warning" />
+              <StatCard label="Today Resolved Incident" value={summary.todayResolved} icon={<CheckCircle2 className="h-4 w-4" />} tone="success" />
+            </div>
+          </section>
+
+          {/* Yesterday Section */}
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold tracking-tight">Yesterday</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <StatCard label="Yesterday Raised Incident" value={summary.yesterdayRaised} icon={<PlusCircle className="h-4 w-4" />} tone="warning" />
+              <StatCard label="Yesterday Resolved Incident" value={summary.yesterdayResolved} icon={<CheckCircle2 className="h-4 w-4" />} tone="success" />
+            </div>
+          </section>
+
+          {/* Current Month Section */}
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold tracking-tight">Current Month</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <StatCard label="Total Incident Count (Month)" value={summary.currentMonthTotal} icon={<ChartNoAxesGantt className="h-4 w-4" />} tone="primary" />
+              <StatCard label="Resolved Incident (Month)" value={summary.currentMonthResolved} icon={<CheckCircle2 className="h-4 w-4" />} tone="success" />
+            </div>
+          </section>
+
+          {/* New Section */}
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold tracking-tight">Additional</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <StatCard label="Not Assigned Incident Count" value={summary.notAssigned} icon={<UserX className="h-4 w-4" />} tone="muted" />
+              <StatCard label="Total On Hold Incident" value={summary.onHoldTotal} icon={<PauseCircle className="h-4 w-4" />} tone="destructive" />
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </MainLayout>
   );
 }
