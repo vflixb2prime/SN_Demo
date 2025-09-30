@@ -1,10 +1,6 @@
 import { RequestHandler } from "express";
 import { computeIncidentSummary } from "@shared/summary";
-import {
-  Incident,
-  IncidentStatus,
-  IncidentSummaryResponse,
-} from "@shared/api";
+import { Incident, IncidentStatus, IncidentSummaryResponse } from "@shared/api";
 
 // Deterministic pseudo-random generator
 function mulberry32(seed: number) {
@@ -86,7 +82,6 @@ function generateMockIncidents(daysBack = 120, seed = 123456): Incident[] {
 
   return incidents;
 }
-
 
 const INCIDENT_CACHE = generateMockIncidents();
 

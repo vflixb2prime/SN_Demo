@@ -62,25 +62,19 @@ export default function Index() {
     };
   }, []);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-    isFetching,
-    error,
-  } = useQuery<IncidentSummaryResponse>({
-    queryKey: [
-      "incident-summary",
-      config?.baseUrl,
-      config?.defaultQuery,
-      overrideQuery,
-    ],
-    queryFn: () => fetchIncidentSummary({ query: overrideQuery }),
-    enabled: Boolean(config),
-    refetchInterval: 60_000,
-    retry: false,
-  });
+  const { data, isLoading, isError, refetch, isFetching, error } =
+    useQuery<IncidentSummaryResponse>({
+      queryKey: [
+        "incident-summary",
+        config?.baseUrl,
+        config?.defaultQuery,
+        overrideQuery,
+      ],
+      queryFn: () => fetchIncidentSummary({ query: overrideQuery }),
+      enabled: Boolean(config),
+      refetchInterval: 60_000,
+      retry: false,
+    });
 
   const summary = data?.summary;
 
@@ -131,7 +125,7 @@ export default function Index() {
         <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm">
           {error instanceof MissingServiceNowConfigError
             ? "ServiceNow configuration not found. Save your API details on the API Console page."
-            : error?.message ?? "Failed to fetch ServiceNow data."}
+            : (error?.message ?? "Failed to fetch ServiceNow data.")}
         </div>
       ) : summary ? (
         <div className="space-y-10">

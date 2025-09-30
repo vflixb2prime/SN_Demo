@@ -49,7 +49,8 @@ function mapStateToStatus(state?: string | null): Incident["status"] {
 }
 
 export function mapRecordToIncident(record: ServiceNowApiRecord): Incident {
-  const openedIso = parseDateString(record.opened_at) ?? new Date().toISOString();
+  const openedIso =
+    parseDateString(record.opened_at) ?? new Date().toISOString();
   const resolvedIso = parseDateString(record.resolved_at);
   return {
     id: record.sys_id,
