@@ -1,4 +1,4 @@
-import type { Incident } from "@shared/api";
+import type { Incident, IncidentSummaryResponse } from "@shared/api";
 import { computeIncidentSummary } from "@shared/summary";
 import { parse } from "date-fns";
 
@@ -94,10 +94,7 @@ export function computeSummaryFromResponse(
 
 export function generateSummaryPayload(
   incidents: Incident[],
-): {
-  summary: ReturnType<typeof computeIncidentSummary>;
-  generatedAt: string;
-} {
+): IncidentSummaryResponse {
   const summary = computeIncidentSummary(incidents);
   return {
     summary,
