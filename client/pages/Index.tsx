@@ -59,7 +59,7 @@ export default function Index() {
               <h2 className="text-lg font-semibold tracking-tight">Today</h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <StatCard label="Total Incident Count" value={summary.todayTotal} icon={<ChartNoAxesGantt className="h-4 w-4" />} tone="primary" />
+              <StatCard label="Total Incident Count" value={summary.todayTotal} icon={<BarChart3 className="h-4 w-4" />} tone="primary" />
               <StatCard label="Today Raised Incident" value={summary.todayRaised} icon={<PlusCircle className="h-4 w-4" />} tone="warning" />
               <StatCard label="Today Resolved Incident" value={summary.todayResolved} icon={<CheckCircle2 className="h-4 w-4" />} tone="success" />
             </div>
@@ -84,7 +84,7 @@ export default function Index() {
               <h2 className="text-lg font-semibold tracking-tight">Current Month</h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <StatCard label="Total Incident Count (Month)" value={summary.currentMonthTotal} icon={<ChartNoAxesGantt className="h-4 w-4" />} tone="primary" />
+              <StatCard label="Total Incident Count (Month)" value={summary.currentMonthTotal} icon={<BarChart3 className="h-4 w-4" />} tone="primary" />
               <StatCard label="Resolved Incident (Month)" value={summary.currentMonthResolved} icon={<CheckCircle2 className="h-4 w-4" />} tone="success" />
             </div>
           </section>
