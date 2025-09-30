@@ -14,6 +14,15 @@ import {
   UserX,
 } from "lucide-react";
 
+function formatAssigneeName(name: string) {
+  if (name === "Unassigned") return name;
+  return name
+    .split(/[\s_-]+/u)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export default function Index() {
   const { data, isLoading, isError, refetch, isFetching } =
     useQuery<IncidentSummaryResponse>({
@@ -57,7 +66,7 @@ export default function Index() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 9 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full" />
+            <Skeleton key={i} className="h-24 w-full" />
           ))}
         </div>
       ) : summary ? (
@@ -161,6 +170,27 @@ export default function Index() {
               />
             </div>
           </section>
+
+          {summary.resolvedBy.length > 0 && (
+            <section>
+              <div className="mb-3 flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Resolved by
+                </h2>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                {summary.resolvedBy.map(({ name, count }) => (
+                  <StatCard
+                    key={name}
+                    label={formatAssigneeName(name)}
+                    value={count}
+                    tone="success"
+                  />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       ) : null}
     </MainLayout>
